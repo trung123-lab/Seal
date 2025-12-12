@@ -22,6 +22,20 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     
+    - name: Create appsettings.Production.json
+      run: |
+        $content = @"
+        {
+          "Authentication": {
+            "Google": {
+              "ClientId": "${{ secrets.GOOGLE_CLIENT_ID }}",
+              "ClientSecret": "${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            }
+          }
+        }
+        "@
+        Set-Content -Path "Seal/appsettings.Production.json" -Value $content
+    
     - name: Publish
       run: dotnet publish Seal/Seal.csproj -c Release -o ./publish
     
