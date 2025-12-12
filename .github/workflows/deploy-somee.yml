@@ -28,6 +28,9 @@ jobs:
     - name: Remove runtimes folder (Somee limitation)
       run: Remove-Item -Recurse -Force ./publish/runtimes -ErrorAction SilentlyContinue
     
+    - name: List files to upload
+      run: Get-ChildItem -Path ./publish -Recurse | Select-Object FullName
+    
     - name: Upload to Somee via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
