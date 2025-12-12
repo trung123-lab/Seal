@@ -25,6 +25,9 @@ jobs:
     - name: Publish
       run: dotnet publish Seal/Seal.csproj -c Release -o ./publish
     
+    - name: Remove runtimes folder (Somee limitation)
+      run: Remove-Item -Recurse -Force ./publish/runtimes -ErrorAction SilentlyContinue
+    
     - name: Upload to Somee via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
