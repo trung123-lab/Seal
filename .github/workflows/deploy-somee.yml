@@ -22,19 +22,14 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     
-    - name: Create appsettings.Production.json
+    - name: Inject Google OAuth credentials into appsettings.json
       run: |
-        $content = @"
-        {
-          "Authentication": {
-            "Google": {
-              "ClientId": "${{ secrets.GOOGLE_CLIENT_ID }}",
-              "ClientSecret": "${{ secrets.GOOGLE_CLIENT_SECRET }}"
-            }
-          }
-        }
-        "@
-        Set-Content -Path "Seal/appsettings.Production.json" -Value $content
+        $appsettingsPath = "Seal/appsettings.json"
+        $json = Get-Content $appsettingsPath | ConvertFrom-Json
+        $json.Authentication.Google.ClientId = "${{ secrets.GOOGLE_CLIENT_ID }}"
+        $json.Authentication.Google.ClientSecret = "${{ secrets.GOOGLE_CLIENT_SECRET }}"
+        $json | ConvertTo-Json -Depth 10 | Set-Content $appsettingsPath
+        Write-Host "Injected Google OAuth credentials into appsettings.json"
     
     - name: Publish
       run: dotnet publish Seal/Seal.csproj -c Release -o ./publish
