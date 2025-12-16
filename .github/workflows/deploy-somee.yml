@@ -38,21 +38,7 @@ jobs:
     - name: List files to upload
       run: Get-ChildItem -Path ./publish -Recurse | Select-Object FullName
     
-    - name: Stop app on Somee (via FTP marker file)
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./publish/
-        server-dir: www.sealfall225.somee.com/
-        files: |
-          ../app_offline.htm
-        state-name: .ftp-deploy-sync-state.json
-        dangerous-clean-slate: false
-      continue-on-error: true
-    
-    - name: Clean old files on server and upload new files
+    - name: Upload to Somee via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.FTP_SERVER }}
@@ -62,17 +48,3 @@ jobs:
         server-dir: www.sealfall225.somee.com/
         state-name: .ftp-deploy-sync-state.json
         dangerous-clean-slate: true
-    
-    - name: Remove app_offline.htm to restart app
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./publish/
-        server-dir: www.sealfall225.somee.com/
-        files: |
-          app_offline.htm
-        state-name: .ftp-deploy-sync-state.json
-        dangerous-clean-slate: false
-      continue-on-error: true
