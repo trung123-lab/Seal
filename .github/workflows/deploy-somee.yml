@@ -57,6 +57,20 @@ jobs:
         $size = (Get-ChildItem -Path ./publish -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
         Write-Host "Optimized publish size: $([Math]::Round($size, 2)) MB"
     
+    - name: Create minimal deployment package
+      run: |
+        $publishDir = "./publish"
+        $dllDir = "./deploy"
+        New-Item -ItemType Directory -Path $dllDir -Force | Out-Null
+        
+        # Copy only DLLs and essential configs
+        Copy-Item "$publishDir/*.dll" $dllDir -Force
+        Copy-Item "$publishDir/appsettings*.json" $dllDir -Force
+        Copy-Item "$publishDir/Seal.runtimeconfig.json" $dllDir -Force
+        
+        $size = (Get-ChildItem -Path $dllDir -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
+        Write-Host "Minimal deploy size: $([Math]::Round($size, 2)) MB"
+    
     - name: Stop app on Somee (via FTP marker file)
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -77,7 +91,7 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./publish/
+        local-dir: ./deploy/
         server-dir: www.sealfall225.somee.com/
         state-name: .ftp-deploy-sync-state.json
         dangerous-clean-slate: false
