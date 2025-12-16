@@ -42,21 +42,6 @@ jobs:
     - name: Publish (Optimized)
       run: dotnet publish Seal/Seal.csproj -c Release -o ./publish --no-build -p:PublishTrimmed=true -p:SelfContained=false
     
-    - name: Clean publish output
-      run: |
-        # Remove unnecessary files
-        Remove-Item -Recurse -Force ./publish/runtimes -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Force ./publish/wwwroot -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Force ./publish/*.pdb -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Force ./publish/refs -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Force ./publish/web.config -ErrorAction SilentlyContinue
-        
-        # Keep only essential files
-        Get-ChildItem -Path ./publish -Recurse -Include "*.json", "*.config" | ForEach-Object { Write-Host "Config: $_" }
-        
-        $size = (Get-ChildItem -Path ./publish -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-        Write-Host "Optimized publish size: $([Math]::Round($size, 2)) MB"
-    
     - name: Create minimal deployment package
       run: |
         $publishDir = "./publish"
@@ -67,6 +52,9 @@ jobs:
         Copy-Item "$publishDir/*.dll" $dllDir -Force
         Copy-Item "$publishDir/appsettings*.json" $dllDir -Force
         Copy-Item "$publishDir/Seal.runtimeconfig.json" $dllDir -Force
+        
+        # Remove publish folder to avoid uploading it
+        Remove-Item -Recurse -Force ./publish
         
         $size = (Get-ChildItem -Path $dllDir -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
         Write-Host "Minimal deploy size: $([Math]::Round($size, 2)) MB"
