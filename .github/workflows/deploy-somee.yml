@@ -16,8 +16,16 @@ jobs:
       with:
         dotnet-version: '8.0.x'
     
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore --locked-mode
     
     - name: Build
       run: dotnet build --configuration Release --no-restore
@@ -31,16 +39,20 @@ jobs:
         $json | ConvertTo-Json -Depth 10 | Set-Content $appsettingsPath
         Write-Host "Injected Google OAuth credentials into appsettings.json"
     
-    - name: Publish
-      run: dotnet publish Seal/Seal.csproj -c Release -o ./publish
+    - name: Publish (Trimmed & ReadyToRun)
+      run: dotnet publish Seal/Seal.csproj -c Release -o ./publish --no-build
     
-    - name: Remove unnecessary folders (Somee limitation)
+    - name: Optimize publish output
       run: |
+        # Remove unnecessary files for Somee
         Remove-Item -Recurse -Force ./publish/runtimes -ErrorAction SilentlyContinue
         Remove-Item -Recurse -Force ./publish/wwwroot -ErrorAction SilentlyContinue
-    
-    - name: List files to upload
-      run: Get-ChildItem -Path ./publish -Recurse | Select-Object FullName
+        Remove-Item -Recurse -Force ./publish/*.pdb -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force ./publish/refs -ErrorAction SilentlyContinue
+        
+        # Show size before upload
+        $size = (Get-ChildItem -Path ./publish -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
+        Write-Host "Publish folder size: $([Math]::Round($size, 2)) MB"
     
     - name: Stop app on Somee (via FTP marker file)
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -49,7 +61,7 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
-        server-dir: www.SealFall25.somee.com/
+        server-dir: www.sealfall225.somee.com/
         files: |
           app_offline.htm
         state-name: .ftp-deploy-sync-state.json
@@ -63,6 +75,6 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./publish/
-        server-dir: www.SealFall25.somee.com/
+        server-dir: www.sealfall225.somee.com/
         state-name: .ftp-deploy-sync-state.json
         dangerous-clean-slate: false
