@@ -45,7 +45,6 @@ namespace Seal.Controller
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllAppeals()
         {
