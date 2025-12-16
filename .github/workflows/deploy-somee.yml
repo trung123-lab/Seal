@@ -38,6 +38,34 @@ jobs:
     - name: List files to upload
       run: Get-ChildItem -Path ./publish -Recurse | Select-Object FullName
     
+    - name: Create app_offline.htm to stop app
+      run: |
+        $content = @"
+        <!DOCTYPE html>
+        <html>
+        <head><title>Application Offline</title></head>
+        <body><h1>Application is being updated. Please try again in a few moments.</h1></body>
+        </html>
+        "@
+        Set-Content -Path ./app_offline.htm -Value $content
+    
+    - name: Upload app_offline.htm first
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./publish/
+        server-dir: www.sealfall225.somee.com/
+        files: |
+          app_offline.htm
+        state-name: .ftp-deploy-sync-state.json
+        dangerous-clean-slate: false
+      continue-on-error: true
+    
+    - name: Wait for app to stop
+      run: Start-Sleep -Seconds 5
+    
     - name: Upload to Somee via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
