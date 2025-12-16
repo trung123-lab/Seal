@@ -34,11 +34,6 @@ jobs:
     - name: Publish
       run: dotnet publish Seal/Seal.csproj -c Release -o ./publish
     
-    - name: Remove unnecessary folders (Somee limitation)
-      run: |
-        Remove-Item -Recurse -Force ./publish/runtimes -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Force ./publish/wwwroot -ErrorAction SilentlyContinue
-    
     - name: List files to upload
       run: Get-ChildItem -Path ./publish -Recurse | Select-Object FullName
     
@@ -49,7 +44,7 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
-        server-dir: www.SealFall25.somee.com/
+        server-dir: www.sealfall225.somee.com/
         files: |
           app_offline.htm
         state-name: .ftp-deploy-sync-state.json
@@ -63,6 +58,6 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./publish/
-        server-dir: www.SealFall25.somee.com/
+        server-dir: www.sealfall225.somee.com/
         state-name: .ftp-deploy-sync-state.json
         dangerous-clean-slate: false
