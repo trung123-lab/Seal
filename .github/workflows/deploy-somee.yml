@@ -53,6 +53,14 @@ jobs:
         Copy-Item "$publishDir/appsettings*.json" $dllDir -Force
         Copy-Item "$publishDir/Seal.runtimeconfig.json" $dllDir -Force
         
+        # Copy wwwroot and runtimes if they exist
+        if (Test-Path "$publishDir/wwwroot") {
+          Copy-Item "$publishDir/wwwroot" $dllDir -Recurse -Force
+        }
+        if (Test-Path "$publishDir/runtimes") {
+          Copy-Item "$publishDir/runtimes" $dllDir -Recurse -Force
+        }
+        
         # Remove publish folder to avoid uploading it
         Remove-Item -Recurse -Force ./publish
         
@@ -86,4 +94,4 @@ jobs:
         local-dir: ./deploy/
         server-dir: www.sealfall225.somee.com/
         state-name: .ftp-deploy-sync-state.json
-        dangerous-clean-slate: true
+        dangerous-clean-slate: false
