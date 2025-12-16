@@ -48,17 +48,21 @@ jobs:
         $dllDir = "./deploy"
         New-Item -ItemType Directory -Path $dllDir -Force | Out-Null
         
-        # Copy only DLLs and essential configs
-        Copy-Item "$publishDir/*.dll" $dllDir -Force
+        # Copy only app DLLs (Seal, Service, Common, Repositories)
+        @("Seal.dll", "Service.dll", "Common.dll", "Repositories.dll") | ForEach-Object {
+          if (Test-Path "$publishDir/$_") {
+            Copy-Item "$publishDir/$_" $dllDir -Force
+          }
+        }
+        
+        # Copy essential configs
         Copy-Item "$publishDir/appsettings*.json" $dllDir -Force
         Copy-Item "$publishDir/Seal.runtimeconfig.json" $dllDir -Force
+        Copy-Item "$publishDir/web.config" $dllDir -Force -ErrorAction SilentlyContinue
         
-        # Copy wwwroot and runtimes if they exist
-        if (Test-Path "$publishDir/wwwroot") {
+        # Copy wwwroot if it has content
+        if ((Test-Path "$publishDir/wwwroot") -and ((Get-ChildItem "$publishDir/wwwroot" -Recurse | Measure-Object).Count -gt 0)) {
           Copy-Item "$publishDir/wwwroot" $dllDir -Recurse -Force
-        }
-        if (Test-Path "$publishDir/runtimes") {
-          Copy-Item "$publishDir/runtimes" $dllDir -Recurse -Force
         }
         
         # Remove publish folder to avoid uploading it
