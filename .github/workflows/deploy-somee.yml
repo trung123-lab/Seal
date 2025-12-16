@@ -59,17 +59,21 @@ jobs:
         $size = (Get-ChildItem -Path $dllDir -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
         Write-Host "Minimal deploy size: $([Math]::Round($size, 2)) MB"
     
+    - name: Prepare app offline marker
+      run: |
+        New-Item -ItemType Directory -Path ./offline -Force | Out-Null
+        Copy-Item app_offline.htm ./offline/ -Force
+      continue-on-error: true
+    
     - name: Stop app on Somee (via FTP marker file)
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./
+        local-dir: ./offline/
         server-dir: www.sealfall225.somee.com/
-        files: |
-          app_offline.htm
-        state-name: .ftp-deploy-sync-state.json
+        state-name: .ftp-deploy-sync-state-offline.json
         dangerous-clean-slate: false
       continue-on-error: true
     
@@ -82,4 +86,4 @@ jobs:
         local-dir: ./deploy/
         server-dir: www.sealfall225.somee.com/
         state-name: .ftp-deploy-sync-state.json
-        dangerous-clean-slate: false
+        dangerous-clean-slate: true
