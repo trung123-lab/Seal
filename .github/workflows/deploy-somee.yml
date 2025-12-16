@@ -40,7 +40,7 @@ jobs:
         Write-Host "Injected Google OAuth credentials into appsettings.json"
     
     - name: Publish (Optimized)
-      run: dotnet publish Seal/Seal.csproj -c Release -o ./publish --no-build -p:PublishTrimmed=true -p:PublishReadyToRun=true -p:SelfContained=false
+      run: dotnet publish Seal/Seal.csproj -c Release -o ./publish --no-build -p:PublishTrimmed=true -p:SelfContained=false
     
     - name: Clean publish output
       run: |
